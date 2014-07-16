@@ -24,23 +24,19 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing ('analysis')
 # Set useful defaults
 #options.inputFiles = '/store/user/tapas/ETauSkim/skim_12_1_erV.root'
-#options.inputFiles = '/store/user/ldodd/GluGluToHToTauTau_M-125_13TeV-powheg-pythia6/GluGluToHToTauTau_M-125_13TeV-powheg-pythia6_Fall13dr-tsg_PU40bx25_POSTLS162_V2-v1/05a81b8d696d27a5c3c2ca036967addd/skim_20_1_63z.root'
-#options.inputFiles = '/store/mc/Fall13dr/Neutrino_Pt-2to20_gun/GEN-SIM-RAW/tsg_PU40bx25_POSTLS162_V2-v1/20003/CC8426A6-B27C-E311-8767-002618943934.root'
-#options.inputFiles = '/store/user/ldodd/TT_Tune4C_13TeV-pythia8-tauola/TT_Tune4C_13TeV-pythia8-tauola-tsg_PU40bx25_POSTLS162_V2-v1/fb508503c16d6e4b02bc25104d11f7c2/skim_105_1_Equ.root'
-#options.inputFiles = '/store/user/ldodd/TT_Tune4C_13TeV-pythia8-tauola/TT_Tune4C_13TeV-pythia8-tauola-tsg_PU40bx25_POSTLS162_V2-v1/fb508503c16d6e4b02bc25104d11f7c2/skim_104_1_uT6.root'
-#options.outputFile = "uct_efficiency_tree.root"
+options.outputFile = "uct_efficiency_tree.root"
 options.register(
     'eicIsolationThreshold',
     3,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.int,
     "EIC Isolation threshold")
-#options.register(
-#    'hActivityCut',
-#    5.0,
-#    VarParsing.multiplicity.singleton,
-#    VarParsing.varType.float,
-#    "HCAL activity threshold")
+options.register(
+    'hActivityCut',
+    0.5,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.float,
+    "HCAL activity threshold")
 options.register(
     'ecalCalib',
     'CALIB_V4',
@@ -87,7 +83,6 @@ else:
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(options.maxEvents)
-    #input = cms.untracked.int32(500)
 )
 
 process.source = cms.Source(
@@ -161,7 +156,6 @@ common_ntuple_branches = cms.PSet(
     l1gDPhi = cms.string("? l1gMatch ? deltaPhi(l1g.phi, reco.phi) : -1"),
     l1gDEta = cms.string("? l1gMatch ? l1g.eta - reco.eta : -10"),
     l1gDR = cms.string("? l1gMatch ? deltaR(l1g.eta, l1g.phi, reco.eta, reco.phi) : -1"),
-
 )
 
 jet_branches = cms.PSet(
