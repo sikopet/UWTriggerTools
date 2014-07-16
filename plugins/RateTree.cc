@@ -77,7 +77,9 @@ class RateTree : public edm::EDAnalyzer {
     std::vector<Float_t>* puEM_;
     std::vector<Float_t>* puUICEM_;
     std::vector<Float_t>* effArea_;
+    std::vector<Float_t>* eneighbor_;
     std::vector<bool>* taus_;
+    std::vector<bool>* tausneighbor_;
     std::vector<bool>* mips_;
 
 };
@@ -89,7 +91,9 @@ RateTree::RateTree(const edm::ParameterSet& pset) {
   pts_ = new std::vector<Float_t>();
   etas_ = new std::vector<Float_t>();
   phis_ = new std::vector<Float_t>();
+  eneighbor_ = new std::vector<Float_t>();
   taus_ = new std::vector<bool>();
+  tausneighbor_ = new std::vector<bool>();
   mips_ = new std::vector<bool>();
 
 
@@ -162,7 +166,9 @@ RateTree::RateTree(const edm::ParameterSet& pset) {
     tree->Branch("puEM", "std::vector<float>", &puEM_);
     tree->Branch("puUICEM", "std::vector<float>", &puUICEM_);
     tree->Branch("effArea", "std::vector<float>", &effArea_);
+    tree->Branch("associated4x4Et", "std::vector<float>",&eneighbor_);
     tree->Branch("tauVeto", "std::vector<bool>", &taus_);
+    tree->Branch("associated4x4Tau","std::vector<bool>",&tausneighbor_);
     tree->Branch("mipBit", "std::vector<bool>", &mips_);
 
     // Now add nice aliases so the same draw commands work for rate/eff
@@ -183,6 +189,7 @@ RateTree::RateTree(const edm::ParameterSet& pset) {
 
     tree->SetAlias("l1gEllIso", "ellIso");
     tree->SetAlias("l1gTauVeto", "tauVeto");
+    tree->SetAlias("l1gTauVetoNeighbor","associated4x4Tau");
     tree->SetAlias("l1gMIP", "mipBit");
 
     tree->SetAlias("l1gPU", "pu");
@@ -228,7 +235,9 @@ RateTree::~RateTree() {
   delete puUICEM_;
   delete effArea_;
   delete mips_;
+  delete eneighbor_;
   delete taus_;
+  delete tausneighbor_;
 }
 
 
@@ -303,7 +312,9 @@ void RateTree::analyze(const edm::Event& evt, const edm::EventSetup& es) {
   puEM_->clear();
   puUICEM_->clear();
   effArea_->clear();
+  eneighbor_->clear();
   taus_->clear();
+  tausneighbor_->clear();
   mips_->clear();
 
   // Setup meta info
@@ -359,7 +370,10 @@ void RateTree::analyze(const edm::Event& evt, const edm::EventSetup& es) {
       puUICEM_->push_back(uct->getFloat("puLevelUICEM", -4));
       effArea_->push_back(uct->getFloat("effArea", -4));
       mips_->push_back(uct->getInt("mipBit", -4));
+      eneighbor_->push_back(uct->getFloat("associated4x4Et",-4));
       taus_->push_back(uct->getInt("tauVeto", -4));
+      //std::cout << "tauVeto Rate Tree:" << uct->getFloat("tauVeto",-4) << std::endl;
+      tausneighbor_->push_back(uct->getInt("associated4x4Tau",-4));
       // UCT doesn't have a type
       type_->push_back(-1);
     } else {
@@ -409,7 +423,8 @@ void RateTree::analyze(const edm::Event& evt, const edm::EventSetup& es) {
   puUICEM_->push_back(-5);
   effArea_->push_back(-5);
   mips_->push_back(-5);
-  taus_->push_back(-5);
+  //taus_->push_back(-5);
+  //tausneighbor_->push_back(-5);
   type_->push_back(-5);
 
   tree->Fill();
