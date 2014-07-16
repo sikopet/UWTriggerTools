@@ -24,19 +24,23 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing ('analysis')
 # Set useful defaults
 #options.inputFiles = '/store/user/tapas/ETauSkim/skim_12_1_erV.root'
-options.outputFile = "uct_efficiency_tree.root"
+#options.inputFiles = '/store/user/ldodd/GluGluToHToTauTau_M-125_13TeV-powheg-pythia6/GluGluToHToTauTau_M-125_13TeV-powheg-pythia6_Fall13dr-tsg_PU40bx25_POSTLS162_V2-v1/05a81b8d696d27a5c3c2ca036967addd/skim_20_1_63z.root'
+#options.inputFiles = '/store/mc/Fall13dr/Neutrino_Pt-2to20_gun/GEN-SIM-RAW/tsg_PU40bx25_POSTLS162_V2-v1/20003/CC8426A6-B27C-E311-8767-002618943934.root'
+#options.inputFiles = '/store/user/ldodd/TT_Tune4C_13TeV-pythia8-tauola/TT_Tune4C_13TeV-pythia8-tauola-tsg_PU40bx25_POSTLS162_V2-v1/fb508503c16d6e4b02bc25104d11f7c2/skim_105_1_Equ.root'
+#options.inputFiles = '/store/user/ldodd/TT_Tune4C_13TeV-pythia8-tauola/TT_Tune4C_13TeV-pythia8-tauola-tsg_PU40bx25_POSTLS162_V2-v1/fb508503c16d6e4b02bc25104d11f7c2/skim_104_1_uT6.root'
+#options.outputFile = "uct_efficiency_tree.root"
 options.register(
     'eicIsolationThreshold',
     3,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.int,
     "EIC Isolation threshold")
-options.register(
-    'hActivityCut',
-    0.5,
-    VarParsing.multiplicity.singleton,
-    VarParsing.varType.float,
-    "HCAL activity threshold")
+#options.register(
+#    'hActivityCut',
+#    5.0,
+#    VarParsing.multiplicity.singleton,
+#    VarParsing.varType.float,
+#    "HCAL activity threshold")
 options.register(
     'ecalCalib',
     'CALIB_V4',
@@ -51,7 +55,7 @@ options.register(
     'If 1, turn off the ECAL for the stage1 EGTau path.')
 options.register(
     'isMC',
-    0,
+    1,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.int,
     'Set to 1 for simulated samples - updates GT, emulates HCAL TPGs.')
@@ -83,6 +87,7 @@ else:
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(options.maxEvents)
+    #input = cms.untracked.int32(500)
 )
 
 process.source = cms.Source(
@@ -156,6 +161,7 @@ common_ntuple_branches = cms.PSet(
     l1gDPhi = cms.string("? l1gMatch ? deltaPhi(l1g.phi, reco.phi) : -1"),
     l1gDEta = cms.string("? l1gMatch ? l1g.eta - reco.eta : -10"),
     l1gDR = cms.string("? l1gMatch ? deltaR(l1g.eta, l1g.phi, reco.eta, reco.phi) : -1"),
+
 )
 
 jet_branches = cms.PSet(
@@ -177,6 +183,7 @@ egtau_branches = cms.PSet(
     l1gJetPt = cms.string("? l1gMatch ? l1g.getFloat('associatedJetPt', -4) : -2"),
     l1gEllIso = cms.string("? l1gMatch ? l1g.getInt('ellIsolation', -4) : -2"),
     l1gTauVeto = cms.string("? l1gMatch ? l1g.getInt('tauVeto', -4) : -2"),
+    l1gTauVetoNeighbor = cms.string("? l1gMatch ? l1g.getInt('associated4x4Tau', -4) : -2"),
     l1gMIP = cms.string("? l1gMatch ? l1g.getInt('mipBit', -4) : -2"),
     l1gIsEle = cms.string("? l1gMatch ? l1g.getInt('isEle', -4) : -2"),
 )
@@ -202,6 +209,24 @@ tau_branches = cms.PSet(
 
 process.isoTauEfficiency = cms.EDAnalyzer(
     "EfficiencyTree",
+    #recoSrc = cms.VInputTag("isoTaus"),
+    recoSrc = cms.VInputTag("recoTaus"),
+    l1Src = cms.VInputTag(cms.InputTag("l1extraParticles", "Tau")),
+    l1GSrc = cms.VInputTag(cms.InputTag("UCT2015Producer", "IsolatedTauUnpacked")),
+    l1GPUSrc = cms.InputTag("UCT2015Producer", "PULevelPUM0Unpacked"),
+    # Max DR for RECO-trigger matching
+    maxDR = cms.double(0.5),
+    # Ntuple configuration
+    ntuple = cms.PSet(
+        common_ntuple_branches,
+        egtau_branches,
+        tau_branches,
+    )
+)
+
+process.isoTauCheckEfficiency = cms.EDAnalyzer(
+    "EfficiencyTree",
+    #recoSrc = cms.VInputTag("isoTaus"),
     recoSrc = cms.VInputTag("isoTaus"),
     l1Src = cms.VInputTag(cms.InputTag("l1extraParticles", "Tau")),
     l1GSrc = cms.VInputTag(cms.InputTag("UCT2015Producer", "IsolatedTauUnpacked")),
@@ -315,6 +340,7 @@ process.rlxUCTisoL1EGEfficiency = cms.EDAnalyzer(
 process.leptonEfficiencies = cms.Sequence(
 
     process.isoTauEfficiency *
+    process.isoTauCheckEfficiency *
     process.rlxTauEfficiency
     *process.rlxTauPlusJetEfficiency *
 
@@ -427,6 +453,7 @@ if options.isMC:
     process.isoTauEfficiency.recoSrc = cms.VInputTag("trueTaus")
     process.rlxTauEfficiency.recoSrc = cms.VInputTag("trueTaus")
     process.isoTauEfficiency.recoSrc = cms.VInputTag("trueTaus")
+    process.isoTauCheckEfficiency.recoSrc = cms.VInputTag("trueTaus")
     process.rlxTauEfficiency.recoSrc = cms.VInputTag("trueTaus")
     process.printTaus.src=cms.InputTag("trueTaus")
 
@@ -561,7 +588,7 @@ process.schedule = cms.Schedule(
 
 # Make the framework shut up.
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 # Spit out filter efficiency at the end.
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(False))
