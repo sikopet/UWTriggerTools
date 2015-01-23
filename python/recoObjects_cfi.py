@@ -33,7 +33,7 @@ recoElecs = cms.EDFilter(
     src = cms.InputTag( "gsfElectrons" ),
     cut = cms.string(
         " (et>20.0)"
-        " && (gsfTrack.trackerExpectedHitsInner.numberOfHits==0 && !(-0.02<convDist<0.02 && -0.02<convDcot<0.02))"
+        " && (!(-0.02<convDist<0.02 && -0.02<convDcot<0.02))"
         " && (  (isEB"
         " && abs(sigmaIetaIeta)<0.01 &&  abs(deltaPhiSuperClusterTrackAtVtx)<0.03 && abs(deltaEtaSuperClusterTrackAtVtx)<0.004 )"
         " || (isEE"
@@ -54,18 +54,18 @@ isoElecs = cms.EDFilter(
 )
 
 # Apply jet energy corrections - disabled until we can fix the global tag issue.
-calibratedAK5PFJets = cms.EDProducer(
-    'PFJetCorrectionProducer',
-    src = cms.InputTag('ak5PFJets'),
-    correctors = cms.vstring("ak5PFL1FastL2L3Residual")
-)
+#calibratedAK5PFJets = cms.EDProducer(
+#    'PFJetCorrectionProducer',
+#    src = cms.InputTag('ak5PFJets'),
+#    correctors = cms.vstring("ak5PFL1FastL2L3Residual")
+#)
 
 ##########################################################################
 ##-------- Remove electrons and muons from jet collection ----------------------
 ak5PFJetsNOMuons = cms.EDProducer(
     "PFJetCleaner",
-    srcJets = cms.InputTag("calibratedAK5PFJets"),
-    #srcJets = cms.InputTag("ak5PFJets"),
+    #srcJets = cms.InputTag("calibratedAK5PFJets"),
+    srcJets = cms.InputTag("ak5PFJets"),
     module_label = cms.string(""),
     idLevel = cms.int32(0), # No Jet Id Required
     etaMin  =  cms.double(0.0),
@@ -91,7 +91,7 @@ cleanJets=cms.Sequence(
     tightMuons*
     recoElecs*
     isoElecs*
-    calibratedAK5PFJets*
+    #calibratedAK5PFJets*
     ak5PFJetsNOMuons*
     recoJets
 )
@@ -100,6 +100,7 @@ cleanJets=cms.Sequence(
 from Configuration.StandardSequences.GeometryIdeal_cff import *
 from Configuration.StandardSequences.MagneticField_cff import *
 from RecoTauTag.Configuration.RecoPFTauTag_cff import *
+from PhysicsTools.PatAlgos.tools.tauTools import *
 from TrackingTools.TransientTrack.TransientTrackBuilder_cfi import * 
 
 # Select good taus
@@ -126,7 +127,8 @@ isoTaus = cms.EDFilter(
             selectionCut=cms.double(0.5)
         ),
         cms.PSet(
-            discriminator=cms.InputTag("hpsPFTauDiscriminationByLooseIsolationDBSumPtCorr"),
+            #discriminator=cms.InputTag("hpsPFTauDiscriminationByLooseIsolationDBSumPtCorr"),
+            discriminator=cms.InputTag("hpsPFTauDiscriminationByLooseCombinedIsolationDBSumPtCorr"),
             selectionCut=cms.double(0.5)
         ),
     ),
@@ -161,7 +163,7 @@ recoTaus = cms.EDFilter(
 
 recoObjects = cms.Sequence(
     cleanJets *
-    PFTau * 
+#    PFTau * 
     dmTaus *
     isoTaus*
     recoTaus
@@ -182,11 +184,11 @@ trueTaus = cms.EDFilter(
     matching = cms.InputTag("recoTauTruthMatcher")
 )
 
-recoObjects_truthMatched = cms.Sequence(
-    recoObjects *
-    genParticles *
-    tauGenJets *
-    trueHadronicTaus *
-    recoTauTruthMatcher *
-    trueTaus
-)
+#recoObjects_truthMatched = cms.Sequence(
+#    recoObjects *
+#    genParticles *
+#    tauGenJets *
+#    trueHadronicTaus *
+#    recoTauTruthMatcher *
+#    trueTaus
+#)
