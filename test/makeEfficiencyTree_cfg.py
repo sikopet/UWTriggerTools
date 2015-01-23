@@ -51,7 +51,7 @@ options.register(
     'If 1, turn off the ECAL for the stage1 EGTau path.')
 options.register(
     'isMC',
-    0,
+    1,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.int,
     'Set to 1 for simulated samples - updates GT, emulates HCAL TPGs.')
@@ -177,6 +177,7 @@ egtau_branches = cms.PSet(
     l1gJetPt = cms.string("? l1gMatch ? l1g.getFloat('associatedJetPt', -4) : -2"),
     l1gEllIso = cms.string("? l1gMatch ? l1g.getInt('ellIsolation', -4) : -2"),
     l1gTauVeto = cms.string("? l1gMatch ? l1g.getInt('tauVeto', -4) : -2"),
+    l1gTauVetoNeighbor = cms.string("? l1gMatch ? l1g.getInt('associated4x4Tau', -4) : -2"),
     l1gMIP = cms.string("? l1gMatch ? l1g.getInt('mipBit', -4) : -2"),
     l1gIsEle = cms.string("? l1gMatch ? l1g.getInt('isEle', -4) : -2"),
 )
@@ -202,6 +203,24 @@ tau_branches = cms.PSet(
 
 process.isoTauEfficiency = cms.EDAnalyzer(
     "EfficiencyTree",
+    #recoSrc = cms.VInputTag("isoTaus"),
+    recoSrc = cms.VInputTag("recoTaus"),
+    l1Src = cms.VInputTag(cms.InputTag("l1extraParticles", "Tau")),
+    l1GSrc = cms.VInputTag(cms.InputTag("UCT2015Producer", "IsolatedTauUnpacked")),
+    l1GPUSrc = cms.InputTag("UCT2015Producer", "PULevelPUM0Unpacked"),
+    # Max DR for RECO-trigger matching
+    maxDR = cms.double(0.5),
+    # Ntuple configuration
+    ntuple = cms.PSet(
+        common_ntuple_branches,
+        egtau_branches,
+        tau_branches,
+    )
+)
+
+process.isoTauCheckEfficiency = cms.EDAnalyzer(
+    "EfficiencyTree",
+    #recoSrc = cms.VInputTag("isoTaus"),
     recoSrc = cms.VInputTag("isoTaus"),
     l1Src = cms.VInputTag(cms.InputTag("l1extraParticles", "Tau")),
     l1GSrc = cms.VInputTag(cms.InputTag("UCT2015Producer", "IsolatedTauUnpacked")),
@@ -315,6 +334,7 @@ process.rlxUCTisoL1EGEfficiency = cms.EDAnalyzer(
 process.leptonEfficiencies = cms.Sequence(
 
     process.isoTauEfficiency *
+    process.isoTauCheckEfficiency *
     process.rlxTauEfficiency
     *process.rlxTauPlusJetEfficiency *
 
@@ -427,6 +447,7 @@ if options.isMC:
     process.isoTauEfficiency.recoSrc = cms.VInputTag("trueTaus")
     process.rlxTauEfficiency.recoSrc = cms.VInputTag("trueTaus")
     process.isoTauEfficiency.recoSrc = cms.VInputTag("trueTaus")
+    process.isoTauCheckEfficiency.recoSrc = cms.VInputTag("trueTaus")
     process.rlxTauEfficiency.recoSrc = cms.VInputTag("trueTaus")
     process.printTaus.src=cms.InputTag("trueTaus")
 
@@ -561,7 +582,7 @@ process.schedule = cms.Schedule(
 
 # Make the framework shut up.
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 # Spit out filter efficiency at the end.
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(False))
