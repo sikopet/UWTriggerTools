@@ -330,7 +330,7 @@ void MiniEffiTree::analyze(const edm::Event& evt, const edm::EventSetup& es) {
   etas_->push_back(objects[i]->eta());
   phis_->push_back(objects[i]->phi());
  }
-
+/*
 // std::cout<<"Gen Objects!"<<std::endl;
  for (size_t i = 0; i < genObjects.size(); ++i) {
 //  std::cout<<genObjects[i]->pt()<<"   "<<genObjects[i]->eta()<<"   "<<genObjects[i]->phi()<<std::endl;
@@ -339,7 +339,7 @@ void MiniEffiTree::analyze(const edm::Event& evt, const edm::EventSetup& es) {
   genphis_->push_back(genObjects[i]->phi());
   gencharges_->push_back(genObjects[i]->charge());
  }
-
+*/
 
  for (size_t i = 0; i < egObjects.size(); ++i) {
 //  std::cout<<objects[i]->pt()<<"   "<<objects[i]->eta()<<"   "<<objects[i]->phi()<<std::endl;
@@ -357,7 +357,7 @@ void MiniEffiTree::analyze(const edm::Event& evt, const edm::EventSetup& es) {
  }
 
  for (size_t i =0; i < objects.size(); ++i){
-  int match=-1;
+  int matchj=-1;
   double minAngle=0.5;
   for (size_t j=0; j<genObjects.size(); ++j){
    //double deltaEta=(etas_->at(j) - genObjects[i]->eta() );
@@ -366,11 +366,28 @@ void MiniEffiTree::analyze(const edm::Event& evt, const edm::EventSetup& es) {
    double deltaEta=(objects[i]->eta() - genObjects[j]->eta() );
    double deltaPhi=reco::deltaPhi(objects[i]->phi(),genObjects[j]->phi()); 
    double dR=sqrt( deltaEta*deltaEta + deltaPhi*deltaPhi);
+   std::cout << "pt, genpt: " << objects[i]->pt() <<", "<<genObjects[j]->pt() <<", "<<std::endl;
 
-   std::cout <<"dEta, dPhi, dR " << deltaEta << " " << deltaPhi << " " << dR << std::endl;
-   if(dR<minAngle) {minAngle=dR; match=j;}
+   std::cout <<"dEta, dPhi, dR: " << deltaEta << ", " << deltaPhi << ", " << dR << std::endl;
+   if(dR<minAngle) {minAngle=dR; 
+      //match=j;
+      matchj = j;
+      std::cout << "dR < minAngle, matched!" << std::endl;}
   }
-  genmatches_->push_back(match);
+  for (size_t j=0; j<genObjects.size(); ++j){
+    if (j == matchj){
+      genmatches_->push_back(1);
+      std::cout << "pushing back 1 for match pt, genpt: " << objects[i]->pt() <<", "<<genObjects[j]->pt() <<std::endl;
+      genpts_->push_back(genObjects[j]->pt());
+      genetas_->push_back(genObjects[j]->eta());
+      genphis_->push_back(genObjects[j]->phi());
+      gencharges_->push_back(genObjects[j]->charge());
+    }
+//    else{
+ //     genmatches_->push_back(-1);
+  //    std::cout << "pushing back -1 for nonmatch pt, genpt :" << objects[i]->pt() <<", "<<genObjects[j]->pt() <<std::endl;
+   // }
+  }
  }
 
  for (size_t i =0; i < objects.size(); ++i){
