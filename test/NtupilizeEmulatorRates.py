@@ -14,15 +14,15 @@ process.load('Configuration.EventContent.EventContent_cff')
 process.load('Configuration.Geometry.GeometryIdeal_cff')\
 
 # Make the framework shut up.
-process.load("FWCore.MessageLogger.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = 100
-
+#process.load("FWCore.MessageLogger.MessageLogger_cfi")
+#process.MessageLogger.cerr.FwkReport.reportEvery = 100
 # Spit out filter efficiency at the end.
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 
 #Max Events
 process.maxEvents = cms.untracked.PSet(
 	input = cms.untracked.int32(options.maxEvents)
+	#input = cms.untracked.int32(10000)
 )
 
 #Input
@@ -40,9 +40,26 @@ process.TFileService = cms.Service(
 
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag.connect = cms.string('frontier://FrontierProd/CMS_COND_31X_GLOBALTAG')
-process.GlobalTag.globaltag = cms.string('POSTLS162_V2::All')
+#process.GlobalTag.globaltag = cms.string('POSTLS162_V2::All')
+process.GlobalTag.globaltag = cms.string('POSTLS172_V2::All')
+
 
 process.load('L1Trigger.L1TCalorimeter.L1TCaloStage1_PPFromRaw_cff')
+
+from CondCore.DBCommon.CondDBSetup_cfi import CondDBSetup
+process.newRCTConfig = cms.ESSource("PoolDBESSource",
+    CondDBSetup,
+    connect = cms.string('frontier://FrontierPrep/CMS_COND_L1T'),
+    DumpStat=cms.untracked.bool(True),
+    toGet = cms.VPSet(
+        cms.PSet(
+            record = cms.string('L1RCTParametersRcd'),
+	    tag = cms.string('L1RCTParametersRcd_L1TDevelCollisions_ExtendedScaleFactorsV2')
+        )
+    )
+)
+process.prefer("newRCTConfig")
+
 
 process.p1 = cms.Path(
 	process.L1TCaloStage1_PPFromRaw
@@ -55,10 +72,22 @@ process.TauEmul = cms.EDAnalyzer(
        # src = cms.VInputTag(cms.InputTag("CaloStage1FinalDigis", "rlxTaus"))
         src = cms.VInputTag(cms.InputTag("l1ExtraLayer2", "Tau"))
 )
+process.TauEmulIso = cms.EDAnalyzer(
+        "RateTreeEmul",
+        #src = cms.VInputTag(cms.InputTag("L1TCaloRCTToUpgradeConverter","tauJets"))
+       # src = cms.VInputTag(cms.InputTag("CaloStage1FinalDigis", "rlxTaus"))
+        src = cms.VInputTag(cms.InputTag("l1ExtraLayer2", "IsoTau"))
+)
+
+
+
+process.l1RCTParametersTest = cms.EDAnalyzer("L1RCTParametersTester")
 
 
 process.p2 = cms.Path(
 	process.TauEmul
+	+process.TauEmulIso
+	+process.l1RCTParametersTest
 )
 
 process.schedule = cms.Schedule(
