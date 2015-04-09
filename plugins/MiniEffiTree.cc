@@ -106,6 +106,7 @@ MiniEffiTree::MiniEffiTree(const edm::ParameterSet& pset) {
  phis_ = new std::vector<Float_t>();
  L1matches_ = new std::vector<Int_t>();
 
+
  L1pts_ = new std::vector<Float_t>();
  L1etas_ = new std::vector<Float_t>();
  L1phis_ = new std::vector<Float_t>();
@@ -366,7 +367,6 @@ void MiniEffiTree::analyze(const edm::Event& evt, const edm::EventSetup& es) {
   L1charges_->push_back(L1Objects[i]->charge());
  }
 
-
  for (size_t i = 0; i < egObjects.size(); ++i) {
 //  std::cout<<objects[i]->pt()<<"   "<<objects[i]->eta()<<"   "<<objects[i]->phi()<<std::endl;
   egpts_->push_back(egObjects[i]->pt());
@@ -415,6 +415,8 @@ void MiniEffiTree::analyze(const edm::Event& evt, const edm::EventSetup& es) {
   }
  }
 
+
+ /*
  for (size_t i =0; i < objects.size(); ++i){
   int match=-1;
   //double minAngle=0.5;
@@ -434,7 +436,7 @@ void MiniEffiTree::analyze(const edm::Event& evt, const edm::EventSetup& es) {
   dREgTau_->push_back(minAngle);
   
  }
-
+ */
 
 
  for (size_t i =0; i < L1Objects.size(); ++i){
@@ -449,8 +451,8 @@ void MiniEffiTree::analyze(const edm::Event& evt, const edm::EventSetup& es) {
    std::cout <<"L1EGdEta, L1EGdPhi, L1EGdR " << deltaEta << " " << deltaPhi << " " << dR << std::endl;
    if(dR<minAngle) {minAngle=dR; match=j;}
   }
-  L1EgTaumatches_->push_back(match);
-  dRL1EgTau_->push_back(minAngle);
+  //L1EgTaumatches_->push_back(match);
+  //dRL1EgTau_->push_back(minAngle);
  }
 
 
