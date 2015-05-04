@@ -12,7 +12,7 @@
 #ifndef L1RECOMATCH_L5Q3TJND
 #define L1RECOMATCH_L5Q3TJND
 
-#include "L1Trigger/UCT2015/src/L1GObject.h"
+#include "L1Trigger/UWTriggerTools/interface/L1GObject.h"
 #include "DataFormats/Candidate/interface/Candidate.h"
 #include "DataFormats/Provenance/interface/EventID.h"
 
