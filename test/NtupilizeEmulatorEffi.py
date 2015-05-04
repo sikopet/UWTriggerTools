@@ -4,6 +4,7 @@ import os
 from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('analysis')
 options.outputFile = "NtupilizeEmulatorEffi.root"
+
 options.parseArguments()
 process = cms.Process('EmulatorEffiNtupilizer')
 
@@ -11,8 +12,8 @@ process.load('Configuration.StandardSequences.Services_cff')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 process.load('Configuration.EventContent.EventContent_cff')
-process.load('Configuration.Geometry.GeometryIdeal_cff')\
 
+process.load('Configuration.Geometry.GeometryIdeal_cff')
 # Make the framework shut up.
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
@@ -45,20 +46,20 @@ process.GlobalTag.globaltag = cms.string('POSTLS172_V2::All')
 process.load('L1Trigger.L1TCalorimeter.L1TCaloStage1_PPFromRaw_cff')
 process.load("L1Trigger.UWTriggerTools.recoObjects_cfi")
 
-from CondCore.DBCommon.CondDBSetup_cfi import CondDBSetup
-process.newRCTConfig = cms.ESSource("PoolDBESSource",
-    CondDBSetup,
-    connect = cms.string('frontier://FrontierPrep/CMS_COND_L1T'),
-    DumpStat=cms.untracked.bool(True),
-    toGet = cms.VPSet(
-        cms.PSet(
-            record = cms.string('L1RCTParametersRcd'),
-            tag = cms.string('L1RCTParametersRcd_L1TDevelCollisions_ExtendedScaleFactorsV2')
-        ) 
-    ) 
-)
-process.prefer("newRCTConfig")
-
+#from CondCore.DBCommon.CondDBSetup_cfi import CondDBSetup
+#process.newRCTConfig = cms.ESSource("PoolDBESSource",
+#    CondDBSetup,
+#    connect = cms.string('frontier://FrontierPrep/CMS_COND_L1T'),
+#    DumpStat=cms.untracked.bool(True),
+#    toGet = cms.VPSet(
+#        cms.PSet(
+#            record = cms.string('L1RCTParametersRcd'),
+#            tag = cms.string('L1RCTParametersRcd_L1TDevelCollisions_ExtendedScaleFactorsV1')
+#        ) 
+#    ) 
+#)
+#process.prefer("newRCTConfig")
+process.load("L1Trigger.L1TCalorimeter.caloStage1RCTLuts_NewRCTCalib_cff")
 reco_object_step = process.recoObjects
 process.p1 = cms.Path(
         reco_object_step+
@@ -109,7 +110,7 @@ process.l1RCTParametersTest = cms.EDAnalyzer("L1RCTParametersTester")
 process.p2 = cms.Path(
 	process.TauEmulEffi
 	+process.TauEmulEffiIso
-	+process.l1RCTParametersTest
+	#+process.l1RCTParametersTest
  	#+ process.EGEmulEffi
 )
 
