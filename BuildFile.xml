@@ -1,5 +1,4 @@
 <use name="FWCore/Framework"/>
-<use name="L1Trigger/UCT2015Core"/>
 <use name="FWCore/ParameterSet"/>
 <use name="PhysicsTools/UtilAlgos"/>
 <use name="FWCore/ServiceRegistry"/>
