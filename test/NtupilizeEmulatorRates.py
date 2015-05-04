@@ -14,8 +14,8 @@ process.load('Configuration.EventContent.EventContent_cff')
 process.load('Configuration.Geometry.GeometryIdeal_cff')\
 
 # Make the framework shut up.
-#process.load("FWCore.MessageLogger.MessageLogger_cfi")
-#process.MessageLogger.cerr.FwkReport.reportEvery = 100
+process.load("FWCore.MessageLogger.MessageLogger_cfi")
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
 # Spit out filter efficiency at the end.
 process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
 
@@ -46,20 +46,23 @@ process.GlobalTag.globaltag = cms.string('POSTLS172_V2::All')
 
 process.load('L1Trigger.L1TCalorimeter.L1TCaloStage1_PPFromRaw_cff')
 
-from CondCore.DBCommon.CondDBSetup_cfi import CondDBSetup
-process.newRCTConfig = cms.ESSource("PoolDBESSource",
-    CondDBSetup,
-    connect = cms.string('frontier://FrontierPrep/CMS_COND_L1T'),
-    DumpStat=cms.untracked.bool(True),
-    toGet = cms.VPSet(
-        cms.PSet(
-            record = cms.string('L1RCTParametersRcd'),
-	    tag = cms.string('L1RCTParametersRcd_L1TDevelCollisions_ExtendedScaleFactorsV2')
-        )
-    )
-)
-process.prefer("newRCTConfig")
-
+#from CondCore.DBCommon.CondDBSetup_cfi import CondDBSetup
+#process.newRCTConfig = cms.ESSource("PoolDBESSource",
+#    CondDBSetup,
+#    connect = cms.string('frontier://FrontierPrep/CMS_COND_L1T'),
+#    DumpStat=cms.untracked.bool(True),
+#    toGet = cms.VPSet(
+#        cms.PSet(
+#            record = cms.string('L1RCTParametersRcd'),
+#	    tag = cms.string('L1RCTParametersRcd_L1TDevelCollisions_ExtendedScaleFactorsV1')
+#        )
+#    )
+#)
+#process.prefer("newRCTConfig")
+#process.load("L1Trigger.L1TCalorimeter.caloStage1RCTLuts_cff")
+process.load("L1Trigger.L1TCalorimeter.caloStage1RCTLuts_NewRCTCalib_cff")
+#process.RCTConfigProducers.hActivityCut = options.hActivityCut
+#process.RCTConfigProducers.eActivityCut = options.eActivityCut
 
 process.p1 = cms.Path(
 	process.L1TCaloStage1_PPFromRaw
@@ -87,7 +90,7 @@ process.l1RCTParametersTest = cms.EDAnalyzer("L1RCTParametersTester")
 process.p2 = cms.Path(
 	process.TauEmul
 	+process.TauEmulIso
-	+process.l1RCTParametersTest
+	#+process.l1RCTParametersTest
 )
 
 process.schedule = cms.Schedule(
